@@ -34,6 +34,8 @@ export class FirebaseService {
     priority: 0,
     deadline: '',
     id: '0',
+    duration: 60,
+    frequency: '',
   }
 
   async loadTasksFromFirebase() {

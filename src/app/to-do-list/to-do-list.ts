@@ -36,7 +36,9 @@ export class ToDoList {
       category: '',
       priority: 0,
       deadline: '',
-      done: false
+      done: false,
+      duration: 60,
+      frequency: '',
     };
     this.showPopup = true;
   }

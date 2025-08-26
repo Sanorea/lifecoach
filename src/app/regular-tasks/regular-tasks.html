@@ -1,1 +1,25 @@
-<p>regular-tasks works!</p>
+<div class="homework-container">
+  <h3>Homework</h3>
+
+  <!-- Liste aller Homework-Tasks -->
+  <div 
+    *ngFor="let task of homeworkList; trackBy: trackById" 
+    class="homework-item"
+    (click)="openPopup(task)">
+    <div class="homework-content">
+      <h3 class="homework-title">{{ task.title }}</h3>
+      <p class="homework-description">{{ task.description }}</p>
+      <span class="homework-frequency">🔁 {{ task.frequency }}</span>
+    </div>
+  </div>
+
+  <!-- Button für neue Homework-Tasks -->
+  <button class="add-button" (click)="openPopup()">＋</button>
+</div>
+
+<app-homework-popup
+  [showPopup]="showPopup"
+  [task]="currentTask"
+  (close)="closePopup()"
+  (save)="saveTask($event)">
+</app-homework-popup>

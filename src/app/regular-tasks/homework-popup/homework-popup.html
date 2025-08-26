@@ -1,0 +1,36 @@
+<div class="popup-backdrop" *ngIf="showPopup">
+  <div class="popup">
+    <h2 *ngIf="!task.id">Neues Homework</h2>
+    <h2 *ngIf="task.id">Homework bearbeiten</h2>
+
+    <form>
+      <label>
+        Titel *
+        <input type="text" [(ngModel)]="task.title" name="title" required />
+      </label>
+
+      <label>
+        Beschreibung
+        <textarea [(ngModel)]="task.description" name="description"></textarea>
+      </label>
+
+      <label>
+        Frequenz *
+        <select [(ngModel)]="task.frequency" name="frequency" required>
+          <option value="">-- auswählen --</option>
+          <option *ngFor="let f of frequencies" [value]="f">{{ f }}</option>
+        </select>
+      </label>
+
+      <label>
+        Dauer (Minuten)
+        <input type="number" [(ngModel)]="task.duration" name="duration" min="1" />
+      </label>
+    </form>
+
+    <div class="popup-actions">
+      <button type="button" (click)="handleClose()">Abbrechen</button>
+      <button type="button" (click)="handleSave()">Speichern</button>
+    </div>
+  </div>
+</div>
