@@ -1,0 +1,34 @@
+<div class="todo-container">
+  <!-- Offene Tasks -->
+       <h3>To-Do's</h3>
+  <div *ngFor="let toDo of toDoList; trackBy: trackById" class="todo-item">
+    <input type="checkbox" class="todo-checkbox" [checked]="toDo.done" (change)="toggleDone(toDo)" />
+    <div class="todo-content">
+      <h3 class="todo-title">{{ toDo.title }}</h3>
+      <p class="todo-description">{{ toDo.description }}</p>
+      <span class="todo-deadline">📅 {{ toDo.deadline }}</span>
+    </div>
+  </div>
+
+  <button class="add-button" (click)="openPopup()">＋</button>
+
+  <!-- Erledigte Tasks -->
+  <div *ngIf="toDosDone.length > 0" class="done-section">
+    <h3>Erledigt</h3>
+    <div *ngFor="let toDo of toDosDone; trackBy: trackById" class="todo-item done">
+      <input type="checkbox" class="todo-checkbox" [checked]="toDo.done" (change)="toggleDone(toDo)" />
+      <div class="todo-content">
+        <h3 class="todo-title">{{ toDo.title }}</h3>
+        <p class="todo-description">{{ toDo.description }}</p>
+        <span class="todo-deadline">📅 {{ toDo.deadline }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-todo-popup 
+  [showPopup]="showPopup" 
+  [task]="currentTask"
+  (close)="closePopup()"
+  (save)="saveTask($event)">
+</app-todo-popup>

@@ -1,0 +1,30 @@
+<div class="popup-backdrop" *ngIf="showPopup">
+  <div class="popup">
+    <h2>Neues To-Do erstellen</h2>
+
+    <form (ngSubmit)="onSave()" #taskForm="ngForm">
+      <label for="title">Titel*</label>
+      <input id="title" type="text" [(ngModel)]="task.title" name="title" required />
+
+      <label for="description">Beschreibung</label>
+      <textarea id="description" [(ngModel)]="task.description" name="description"></textarea>
+
+      <label for="category">Kategorie*</label>
+      <select id="category" [(ngModel)]="task.category" name="category" required>
+        <option value="">Bitte wählen</option>
+        <option value="To-Do - dringend">To-Do - dringend</option>
+        <option value="To-Do">To-Do</option>
+        <option value="Admin">Admin</option>
+        <option value="Terminblocker">Terminblocker</option>
+      </select>
+
+      <label for="deadline">Deadline*</label>
+      <input id="deadline" type="date" [(ngModel)]="task.deadline" name="deadline" required />
+
+      <div class="popup-actions">
+        <button type="button" class="cancel-btn" (click)="onClose()">Abbrechen</button>
+        <button type="submit" class="save-btn" [disabled]="!taskForm.valid">Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>

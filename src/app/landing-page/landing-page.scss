@@ -1,0 +1,109 @@
+@import './../../styles.scss';
+
+
+.landing-page.container {
+    width: 100%;
+}
+
+.max-width-container {
+    width: 100%;
+    max-width: 1440px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-block: 50px;
+    flex-direction: column;
+}
+
+.headline-text {
+    font-size: 24px;
+    break-before: auto;
+    color: $purple-color;
+}
+
+.current-task-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    button {
+        border-radius: 10px;
+        background-color: $purple-color;
+        color: $bg-color;
+        width: 150px;
+        height: 60px;
+        font-size: 32px;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+}
+
+.current-task-text {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.timer-container {
+    height: 45vh;
+    border-top: 6px solid black;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: $purple-color;
+
+}
+
+.timer-container-times {
+    padding-inline: 32px;
+    display: flex;
+    justify-content: space-between;
+
+    p {
+        
+        font-size: 24px;
+    }
+
+}
+
+.timer-container-times-activ {
+    padding-inline: 32px;
+    display: flex;
+    justify-content: space-between;
+
+    p {
+
+        font-size: 24px;
+        font-weight: 700;
+
+    }
+
+}
+
+.next-task-container {
+    margin-top: 32px;
+    gap: 0px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    p {
+        margin: 0px;
+    }
+
+
+}
+
+.play-icon {
+    position: relative;
+    top: 0px;
+    left: 40vw;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+}
