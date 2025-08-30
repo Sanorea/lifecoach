@@ -23,10 +23,19 @@ export class ToDoList {
   currentTask: ToDos = {} as ToDos;
 
   async ngOnInit() {
+
     const allTasks = await this.firebase.loadTasksFromFirebase();
-    this.toDoList = allTasks.filter(t => !t.done);
-    this.toDosDone = allTasks.filter(t => t.done);
+    const allowedCategories = ['To-Do', 'To-Do - dringend', 'Admin'];
+
+    this.toDoList = allTasks.filter(
+      t => !t.done && allowedCategories.includes(t.category)
+    );
+    this.toDosDone = allTasks.filter(
+      t => t.done && allowedCategories.includes(t.category)
+    );
+
   }
+
 
   openPopup() {
     this.currentTask = {
@@ -50,10 +59,19 @@ export class ToDoList {
   async saveTask(task: ToDos) {
     await this.firebase.addTask(task);
     const allTasks = await this.firebase.loadTasksFromFirebase();
-    this.toDoList = allTasks.filter(t => !t.done);
-    this.toDosDone = allTasks.filter(t => t.done);
+
+    const allowedCategories = ['To-Do', 'To-Do - dringend', 'Admin'];
+
+    this.toDoList = allTasks.filter(
+      t => !t.done && allowedCategories.includes(t.category)
+    );
+    this.toDosDone = allTasks.filter(
+      t => t.done && allowedCategories.includes(t.category)
+    );
+
     this.closePopup();
   }
+
 
   toggleDone(task: ToDos) {
     task.done = !task.done;

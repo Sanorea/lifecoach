@@ -15,8 +15,10 @@
         <option value="To-Do - dringend">To-Do - dringend</option>
         <option value="To-Do">To-Do</option>
         <option value="Admin">Admin</option>
-        <option value="Terminblocker">Terminblocker</option>
       </select>
+
+            <label for="duration">Dauer in min*</label>
+      <input id="deadline" type="number" [(ngModel)]="task.duration" name="duration" required />
 
       <label for="deadline">Deadline*</label>
       <input id="deadline" type="date" [(ngModel)]="task.deadline" name="deadline" required />

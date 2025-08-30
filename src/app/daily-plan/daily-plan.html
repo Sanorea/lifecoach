@@ -1,1 +1,25 @@
-<p>daily-plan works!</p>
+<div class="daily-plan">
+    <!-- Zeitachse links -->
+    <div class="time-axis">
+        <div *ngFor="let hour of hours" class="time-label">
+            {{ hour }}:00
+        </div>
+    </div>
+
+    <!-- Plan rechts -->
+    <div class="plan-items">
+        <div *ngFor="let item of plan" class="plan-item" [ngClass]="{
+           'terminblocker': item.isBlocker,
+           'todo': !item.isBlocker && item.category !== 'frei',
+           'free': item.category === 'frei',
+           'done': item.done
+         }" [style.top.%]="timeToPercent(item.start)" [style.height.%]="durationToPercent(item.start, item.end)">
+            <span class="time">
+                {{ minutesToTime(item.start) }} - {{ minutesToTime(item.end) }}
+            </span>
+            <div class="title">
+                {{ item.title }}
+            </div>
+        </div>
+    </div>
+</div>

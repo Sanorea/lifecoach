@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, Firestore, collection, getDocs, doc, addDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, Firestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ToDos } from "../interfaces/to-dos.interface";
 
 @Injectable({
@@ -75,15 +75,54 @@ export class FirebaseService {
   }
 
   async updateTask(task: ToDos) {
-  if (!task.id) return;
-  const { id, ...data } = task;
-  const docRef = doc(this.db, 'toDo', id);
-  await updateDoc(docRef, data);
-}
+    if (!task.id) return;
+    const { id, ...data } = task;
+    const docRef = doc(this.db, 'toDo', id);
+    await updateDoc(docRef, data);
+  }
 
-async addTask(task: ToDos) {
-  const docRef = await addDoc(collection(this.db, 'toDo'), task);
-  console.log('Neuer Task hinzugefügt: ', docRef.id);
-}
+  async addTask(task: ToDos) {
+    const docRef = await addDoc(collection(this.db, 'toDo'), task);
+    console.log('Neuer Task hinzugefügt: ', docRef.id);
+  }
+
+  async deleteTask(id: string): Promise<void> {
+    if (!id) {
+      throw new Error('Task ID is required for deletion');
+    }
+    const taskDocRef = doc(this.db, `toDo/${id}`);
+    await deleteDoc(taskDocRef);
+    console.log('gelöscht');
+    console.log(id);
+    
+  }
+
+  // 👉 Hilfsfunktionen für Kategorien
+  getHomeworkTasks(): ToDos[] {
+    return this.toDoList.filter(t => t.category === 'homework');
+  }
+
+  getToDoTasks(): ToDos[] {
+    return this.toDoList.filter(t =>
+      t.category === 'To-Do' ||
+      t.category === 'To-Do - dringend' ||
+      t.category === 'Admin'
+    );
+  }
+
+  getTerminblocker(): ToDos[] {
+    return this.toDoList.filter(t => t.category === 'Terminblocker');
+  }
+
+  // Alle in gewünschter Reihenfolge (Landing/Daily Plan)
+  getAllOrderedTasks(): ToDos[] {
+    return [
+      ...this.getTerminblocker(),
+      ...this.getHomeworkTasks(),
+      ...this.getToDoTasks(),
+    ];
+  }
+
+
 
 }

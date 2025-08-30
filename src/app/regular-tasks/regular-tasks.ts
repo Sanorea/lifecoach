@@ -4,10 +4,11 @@ import { FirebaseService } from '../services/firebase';
 import { ToDos } from '../interfaces/to-dos.interface';
 import { CommonModule } from '@angular/common';
 import { HomeworkPopup } from './homework-popup/homework-popup';
+import { DailySchedule } from '../daily-schedule/daily-schedule';
 
 @Component({
   selector: 'app-regular-tasks',
-  imports: [RouterModule, CommonModule, HomeworkPopup],
+  imports: [RouterModule, CommonModule, HomeworkPopup, DailySchedule],
   templateUrl: './regular-tasks.html',
   styleUrl: './regular-tasks.scss'
 })

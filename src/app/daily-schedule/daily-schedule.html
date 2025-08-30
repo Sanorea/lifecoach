@@ -1,0 +1,38 @@
+<div class="daily-schedule">
+  <h2>Tagesstruktur</h2>
+
+  <!-- Eingabe für eigenen Block (immer sichtbar) -->
+  <div class="form-group">
+    <input
+      type="text"
+      [(ngModel)]="otherInsert"
+      name="otherInsert"
+      placeholder="Neuen Block hinzufügen..."
+    />
+    <button type="button" (click)="addBlock()">hinzufügen</button>
+  </div>
+
+  <!-- Formular nur für noch nicht gespeicherte Blöcke -->
+  <form *ngIf="remainingBlocks.length > 0" (ngSubmit)="saveSchedule()">
+    <div *ngFor="let block of remainingBlocks" class="form-group">
+      <label>{{ block.label }}:</label>
+      <input type="time" [(ngModel)]="block.start" [name]="block.key + 'Start'" required />
+      -
+      <input type="time" [(ngModel)]="block.end" [name]="block.key + 'End'" required />
+    </div>
+
+    <button type="submit">Speichern</button>
+  </form>
+
+  <!-- Bestehende Blocker -->
+  <div 
+    *ngFor="let task of blockerList; trackBy: trackById" 
+    class="homework-item">
+    <div class="homework-content">
+      <h3 class="homework-title">{{ task.title }}</h3>
+      <p class="homework-description">{{ task.description }}</p>
+      <button (click)="editBlocker(task)">bearbeiten</button>
+      <button (click)="deleteScheduleInformation(task.id)">löschen</button>
+    </div>
+  </div>
+</div>
