@@ -36,6 +36,7 @@ export class FirebaseService {
     id: '0',
     duration: 60,
     frequency: '',
+    earliest: '',
   }
 
   async loadTasksFromFirebase() {
@@ -94,7 +95,7 @@ export class FirebaseService {
     await deleteDoc(taskDocRef);
     console.log('gelöscht');
     console.log(id);
-    
+
   }
 
   // 👉 Hilfsfunktionen für Kategorien

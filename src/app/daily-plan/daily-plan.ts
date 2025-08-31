@@ -95,7 +95,8 @@ export class DailyPlan implements OnInit {
         deadline: '',
         duration: 0,
         frequency: 'once',
-        done: false
+        done: false,
+        earliest: '',
       };
       await this.firebase.addTask(newTask);
     }

@@ -26,6 +26,13 @@
         Dauer (Minuten)
         <input type="number" [(ngModel)]="task.duration" name="duration" min="1" />
       </label>
+
+      <label for="category">Frühstens</label>
+      <div>
+        <input id="earliest" type="number" [(ngModel)]="task.earliest" name="earliest">
+        <span>Tage vor Deadline</span>
+      </div>
+      
     </form>
 
     <div class="popup-actions">

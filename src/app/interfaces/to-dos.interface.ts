@@ -8,4 +8,5 @@ export interface ToDos {
   frequency: string;
   id: string;
   done?: boolean;
+  earliest: string;
 }

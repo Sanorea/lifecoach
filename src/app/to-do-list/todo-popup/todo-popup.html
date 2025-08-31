@@ -17,11 +17,18 @@
         <option value="Admin">Admin</option>
       </select>
 
-            <label for="duration">Dauer in min*</label>
+      <label for="duration">Dauer in min*</label>
       <input id="deadline" type="number" [(ngModel)]="task.duration" name="duration" required />
 
       <label for="deadline">Deadline*</label>
       <input id="deadline" type="date" [(ngModel)]="task.deadline" name="deadline" required />
+
+      <label for="category">Frühstens*</label>
+      <div>
+        <input id="earliest" type="number" [(ngModel)]="task.earliest" name="earliest" required>
+        <span>Tage vor Deadline</span>
+      </div>
+
 
       <div class="popup-actions">
         <button type="button" class="cancel-btn" (click)="onClose()">Abbrechen</button>

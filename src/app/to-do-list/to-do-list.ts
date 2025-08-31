@@ -48,6 +48,7 @@ export class ToDoList {
       done: false,
       duration: 60,
       frequency: '',
+      earliest: '',
     };
     this.showPopup = true;
   }

@@ -40,6 +40,7 @@ export class RegularTasks {
         done: false,
         duration: 60,
         frequency: '',
+        earliest: '',
       };
     }
     this.showPopup = true;

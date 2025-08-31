@@ -72,6 +72,7 @@ export class DailySchedule {
         done: false,
         duration: 0,
         frequency: 'once',
+        earliest: '',
       };
 
       await this.firebase.addTask(newTask);
