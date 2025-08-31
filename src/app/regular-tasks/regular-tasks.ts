@@ -13,7 +13,7 @@ import { DailySchedule } from '../daily-schedule/daily-schedule';
   styleUrl: './regular-tasks.scss'
 })
 export class RegularTasks {
- firebase = inject(FirebaseService);
+  firebase = inject(FirebaseService);
 
   homeworkList: ToDos[] = [];
   showPopup = false;
@@ -54,6 +54,22 @@ export class RegularTasks {
     const allTasks = await this.firebase.loadTasksFromFirebase();
     this.homeworkList = allTasks.filter(t => t.category === 'homework');
     this.closePopup();
+  }
+
+  private async refreshLists() {
+
+    const allTasks = await this.firebase.loadTasksFromFirebase();
+    const allowedCategories = ['homework'];
+
+    this.homeworkList = allTasks.filter(
+      t => !t.done && allowedCategories.includes(t.category)
+    );
+
+  }
+
+  async deleteHomework(id: string) {
+    await this.firebase.deleteTask(id);
+    await this.refreshLists();
   }
 
   trackById(index: number, item: ToDos) {

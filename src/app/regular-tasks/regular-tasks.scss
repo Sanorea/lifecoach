@@ -22,6 +22,12 @@
 }
 
 .homework-content {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.homework-content-text {
   flex: 1;
 }
 
@@ -54,4 +60,13 @@
 
 .add-button:hover {
   background-color: #1565c0;
+}
+
+.delete-icon {
+  width: 32px;
+
+  &:hover {
+    cursor: pointer;
+    transform: scale(1.1)
+  }
 }

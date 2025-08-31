@@ -306,4 +306,9 @@ export class DailyPlan implements OnInit {
     const m = mins % 60;
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
+
+  isShortItem(item: ScheduledItem): boolean {
+  return (item.end - item.start) < 60;
+}
+
 }

@@ -28,6 +28,12 @@
 }
 
 .todo-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.todo-content-text {
     flex: 1;
 }
 
@@ -64,4 +70,13 @@
 
 .done-section {
     margin-top: 24px;
+}
+
+.delete-icon {
+    width: 32px;
+
+    &:hover {
+        cursor: pointer;
+        transform: scale(1.1)
+    }
 }

@@ -1,12 +1,15 @@
 <div class="todo-container">
   <!-- Offene Tasks -->
-       <h3>To-Do's</h3>
+  <h3>To-Do's</h3>
   <div *ngFor="let toDo of toDoList; trackBy: trackById" class="todo-item">
     <input type="checkbox" class="todo-checkbox" [checked]="toDo.done" (change)="toggleDone(toDo)" />
     <div class="todo-content">
-      <h3 class="todo-title">{{ toDo.title }}</h3>
-      <p class="todo-description">{{ toDo.description }}</p>
-      <span class="todo-deadline">📅 {{ toDo.deadline }}</span>
+      <div class="todo-content-text">
+        <h3 class="todo-title">{{ toDo.title }}</h3>
+        <p class="todo-description">{{ toDo.description }}</p>
+        <span class="todo-deadline">📅 {{ toDo.deadline }}</span>
+      </div>
+      <img class="delete-icon" src="/img/delete-icon.svg" alt="delete" (click)="deleteToDo(toDo.id)">
     </div>
   </div>
 
@@ -18,17 +21,16 @@
     <div *ngFor="let toDo of toDosDone; trackBy: trackById" class="todo-item done">
       <input type="checkbox" class="todo-checkbox" [checked]="toDo.done" (change)="toggleDone(toDo)" />
       <div class="todo-content">
-        <h3 class="todo-title">{{ toDo.title }}</h3>
-        <p class="todo-description">{{ toDo.description }}</p>
-        <span class="todo-deadline">📅 {{ toDo.deadline }}</span>
+        <div class="todo-content-text">
+          <h3 class="todo-title">{{ toDo.title }}</h3>
+          <p class="todo-description">{{ toDo.description }}</p>
+          <span class="todo-deadline">📅 {{ toDo.deadline }}</span>
+        </div>
+        <img class="delete-icon" src="/img/delete-icon.svg" alt="delete" (click)="deleteToDo(toDo.id)">
       </div>
     </div>
   </div>
 </div>
 
-<app-todo-popup 
-  [showPopup]="showPopup" 
-  [task]="currentTask"
-  (close)="closePopup()"
-  (save)="saveTask($event)">
+<app-todo-popup [showPopup]="showPopup" [task]="currentTask" (close)="closePopup()" (save)="saveTask($event)">
 </app-todo-popup>

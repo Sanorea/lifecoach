@@ -1,84 +1,99 @@
 .daily-plan {
-  position: relative;
-  display: flex;
-  background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 1000px; // entspricht ca. 8-18 Uhr
-
-  // Zeitachse links
-  .time-axis {
-    width: 60px;
-    background: #f7f7f7;
-    border-right: 1px solid #ddd;
-    padding-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    .time-label {
-      font-size: 0.8rem;
-      color: #666;
-      text-align: right;
-      padding-right: 0.4rem;
-      height: calc(100% / 10); // für 10h 8–18
-    }
-  }
-
-  // Container für Plan
-  .plan-items {
     position: relative;
-    flex: 1;
+    display: flex;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    height: 1000px; // entspricht ca. 8-18 Uhr
+
+    // Zeitachse links
+    .time-axis {
+        width: 60px;
+        background: #f7f7f7;
+        border-right: 1px solid #ddd;
+        padding-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .time-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: right;
+            padding-right: 0.4rem;
+            height: calc(100% / 10); // für 10h 8–18
+        }
+    }
+
+    // Container für Plan
+    .plan-items {
+        position: relative;
+        flex: 1;
+    }
+
+    // Jedes Item
+.plan-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0.2rem 0.5rem; // oben/unten + links/rechts
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+
+  // Höhe wird via Template auf 90 % gesetzt
+  // die Margin erzeugt das gewünschte Spacing
+
+  .time {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.2rem;
   }
 
-  // Jedes Item
-  .plan-item {
-    position: absolute;
-    left: 0;
-    right: 0;
-    margin: 0.2rem 0.5rem;
-    padding: 0.4rem 0.6rem;
-    border-radius: 0.6rem;
-    font-size: 0.85rem;
-    line-height: 1.2;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
+  .title {
+    font-weight: 600;
+  }
+
+  &.short {
+    flex-direction: row;
+    align-items: center;
 
     .time {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #333;
-      margin-bottom: 0.2rem;
-    }
-
-    .title {
-      font-weight: 600;
-    }
-
-    &.terminblocker {
-      background: #ffe5e5;
-      border: 1px solid #ffb3b3;
-      color: #b30000;
-    }
-
-    &.todo {
-      background: #e6f0ff;
-      border: 1px solid #c2dbff;
-      color: #003366;
-    }
-
-    &.free {
-      background: #f2f2f2;
-      border: 1px dashed #ccc;
-      color: #888;
-      font-style: italic;
-    }
-
-    &.done {
-      opacity: 0.6;
-      text-decoration: line-through;
+      margin-bottom: 0;
+      margin-right: 0.5rem;
     }
   }
+
+  &.terminblocker {
+    background: #ffe5e5;
+    border: 1px solid #ffb3b3;
+    color: #b30000;
+  }
+
+  &.todo {
+    background: #e6f0ff;
+    border: 1px solid #c2dbff;
+    color: #003366;
+  }
+
+  &.free {
+    background: #f2f2f2;
+    border: 1px dashed #ccc;
+    color: #888;
+    font-style: italic;
+  }
+
+  &.done {
+    opacity: 0.6;
+    text-decoration: line-through;
+  }
+}
+
 }

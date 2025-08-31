@@ -72,6 +72,25 @@ export class ToDoList {
     this.closePopup();
   }
 
+  private async refreshLists() {
+    const allTasks = await this.firebase.loadTasksFromFirebase();
+    const allowedCategories = ['To-Do', 'To-Do - dringend', 'Admin'];
+
+    this.toDoList = allTasks.filter(
+      t => !t.done && allowedCategories.includes(t.category)
+    );
+    this.toDosDone = allTasks.filter(
+      t => t.done && allowedCategories.includes(t.category)
+    );
+  }
+
+  async deleteToDo(id: string) {
+    await this.firebase.deleteTask(id);
+    await this.refreshLists();
+  }
+
+
+
 
   toggleDone(task: ToDos) {
     task.done = !task.done;
