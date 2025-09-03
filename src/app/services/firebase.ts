@@ -46,7 +46,6 @@ export class FirebaseService {
       ...(docSnap.data() as ToDos),
       id: docSnap.id // wichtig, sonst fehlt die Firestore-ID
     }));
-    console.log('toDoList :>> ', this.toDoList);
     return this.toDoList;
   }
 
@@ -83,6 +82,9 @@ export class FirebaseService {
   }
 
   async addTask(task: ToDos) {
+    if (!task.deadline) {
+      task.deadline = new Date().toISOString().split('T')[0]; // Default: Heute
+    }
     const docRef = await addDoc(collection(this.db, 'toDo'), task);
     console.log('Neuer Task hinzugefügt: ', docRef.id);
   }

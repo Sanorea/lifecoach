@@ -1,0 +1,24 @@
+<div class="personal-blocker">
+  <h2>Eigene Terminblocker</h2>
+
+  <!-- Neues Formular für Blocker -->
+  <form (ngSubmit)="saveNewBlock()">
+    <div class="form-group">
+      <input type="text" [(ngModel)]="newBlock.title" name="title" placeholder="Titel" required />
+      <input type="time" [(ngModel)]="newBlock.start" name="start" required />
+      <input type="time" [(ngModel)]="newBlock.end" name="end" required />
+      <input type="date" [(ngModel)]="newBlock.day" name="day" required />
+      <button type="submit">Hinzufügen</button>
+    </div>
+  </form>
+
+  <!-- Bestehende Blocker -->
+  <div *ngFor="let task of blockerList; trackBy: trackById" class="blocker-item">
+    <div class="blocker-content">
+      <h3>{{ task.title }}</h3>
+      <p>{{ task.description }} ({{ task.deadline | date:'dd.MM.yyyy'}})</p>
+      <button (click)="editBlocker(task)">Bearbeiten</button>
+      <button (click)="deleteScheduleInformation(task.id)">Löschen</button>
+    </div>
+  </div>
+</div>

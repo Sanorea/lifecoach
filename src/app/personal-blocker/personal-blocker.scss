@@ -1,0 +1,63 @@
+.daily-schedule {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .form-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    label {
+      flex: 1;
+      font-weight: 500;
+      color: #444;
+    }
+
+    input[type="time"] {
+      flex: 1;
+      margin-left: 0.5rem;
+      padding: 0.3rem 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.4rem;
+      font-size: 0.9rem;
+
+      &:focus {
+        border-color: #0077ff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.2);
+      }
+    }
+  }
+
+  button {
+    align-self: flex-end;
+    padding: 0.6rem 1.2rem;
+    background: #0077ff;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #005fcc;
+    }
+  }
+}

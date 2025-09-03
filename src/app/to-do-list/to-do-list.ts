@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { FirebaseService } from '../services/firebase';
 import { ToDos } from '../interfaces/to-dos.interface';
 import { TodoPopupComponent } from './todo-popup/todo-popup';
+import { PersonalBlocker } from '../personal-blocker/personal-blocker';
 
 
 @Component({
   selector: 'app-to-do-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TodoPopupComponent],
+  imports: [CommonModule, FormsModule, TodoPopupComponent, PersonalBlocker],
   templateUrl: './to-do-list.html',
   styleUrls: ['./to-do-list.scss']
 })

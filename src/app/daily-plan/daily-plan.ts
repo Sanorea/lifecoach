@@ -18,7 +18,7 @@ interface TimeBlock {
   title: string;
   start: number;
   end: number;
-  category: 'Terminblocker';
+  category: 'Terminblocker' | 'personal-blocker';
 }
 
 interface FreeSlot {
@@ -39,7 +39,9 @@ export class DailyPlan implements OnInit {
   tasks: ToDos[] = [];
   plan: ScheduledItem[] = [];
 
-  // Werte für Editiermodus
+  public selectedDate: Date = new Date();
+  private startDate: Date = new Date(); // Basisdatum für Zeitberechnung
+
   workStart: string = '08:00';
   workEnd: string = '17:00';
   breakfast: string = '09:00';
@@ -47,190 +49,191 @@ export class DailyPlan implements OnInit {
   dinner: string = '18:30';
 
   editMode = false;
+  daytime: any;
 
   async ngOnInit() {
+    this.startDate.setHours(0, 0, 0, 0); // auf Mitternacht setzen
     this.tasks = await this.firebase.loadTasksFromFirebase();
-
-    // Lade gespeicherte Werte (falls vorhanden)
+    this.refreshPlan();
     this.restoreTimesFromTasks();
-
     this.plan = this.buildDailyPlan(this.tasks);
+
+
   }
 
   toggleEdit() {
     this.editMode = !this.editMode;
   }
 
-  async saveSettings() {
-    // Schreibe Blocker für Arbeitszeit + Mahlzeiten in Firebase
-    await this.upsertBlocker('Arbeitstag', this.workStart, this.workEnd);
-    await this.upsertBlocker('Frühstück', this.breakfast, this.addMinutes(this.breakfast, 30));
-    await this.upsertBlocker('Mittagessen', this.lunch, this.addMinutes(this.lunch, 60));
-    await this.upsertBlocker('Abendessen', this.dinner, this.addMinutes(this.dinner, 60));
-
-    // Neu laden
-    this.tasks = await this.firebase.loadTasksFromFirebase();
-    this.plan = this.buildDailyPlan(this.tasks);
-
-    this.editMode = false;
-  }
-
-  private async upsertBlocker(title: string, startHHMM: string, endHHMM: string | number) {
-    const start = this.parseTime(startHHMM);
-    const end = typeof endHHMM === 'string' ? this.parseTime(endHHMM) : endHHMM;
-
-    let existing = this.tasks.find(t => t.title === title && t.category === 'Terminblocker');
-    if (existing) {
-      await this.firebase.updateTask({
-        ...existing,
-        description: `${this.format(start)} - ${this.format(end)}`
-      });
-    } else {
-      const newTask: ToDos = {
-        id: '',
-        title,
-        category: 'Terminblocker',
-        description: `${this.format(start)} - ${this.format(end)}`,
-        priority: 0,
-        deadline: '',
-        duration: 0,
-        frequency: 'once',
-        done: false,
-        earliest: '',
-      };
-      await this.firebase.addTask(newTask);
-    }
-  }
-
   private restoreTimesFromTasks() {
-    const findBlock = (title: string) =>
-      this.tasks.find(t => t.title === title && t.category === 'Terminblocker');
-
-    const arbeitstag = findBlock('Arbeitstag');
+    const arbeitstag = this.restoreBlockerTimes('Arbeitstag');
     if (arbeitstag) {
-      const r = this.parseRange(arbeitstag.description!);
-      if (r) {
-        this.workStart = this.format(r.start);
-        this.workEnd = this.format(r.end);
-      }
+      this.workStart = this.format(arbeitstag.start);
+      this.workEnd = this.format(arbeitstag.end);
     }
 
-    const frühstück = findBlock('Frühstück');
-    if (frühstück) {
-      const r = this.parseRange(frühstück.description!);
-      if (r) this.breakfast = this.format(r.start);
-    }
+    this.breakfast = this.restoreMealTime('Frühstück', this.breakfast);
+    this.lunch = this.restoreMealTime('Mittagessen', this.lunch);
+    this.dinner = this.restoreMealTime('Abendessen', this.dinner);
+  }
 
-    const mittag = findBlock('Mittagessen');
-    if (mittag) {
-      const r = this.parseRange(mittag.description!);
-      if (r) this.lunch = this.format(r.start);
-    }
+  private async refreshPlan() {
+    const allTasks = await this.firebase.loadTasksFromFirebase();
 
-    const abend = findBlock('Abendessen');
-    if (abend) {
-      const r = this.parseRange(abend.description!);
-      if (r) this.dinner = this.format(r.start);
-    }
+    // nur Tasks für das ausgewählte Datum
+    const dayString = this.selectedDate.toISOString().split('T')[0]; // yyyy-mm-dd
+    const tasksForDay = allTasks.filter(t =>
+      !t.deadline || t.deadline.startsWith(dayString) || t.category === 'Terminblocker'
+    );
+
+        this.plan = this.buildDailyPlan(tasksForDay);
+
+  }
+
+
+  private restoreBlockerTimes(title: string): { start: number; end: number } | null {
+    const task = this.tasks.find(t => t.title === title && t.category === 'Terminblocker');
+    if (!task) return null;
+    const range = this.parseRange(task.description || '');
+    return range ?? null;
+  }
+
+  private restoreMealTime(title: string, defaultValue: string): string {
+    const range = this.restoreBlockerTimes(title);
+    return range ? this.format(range.start) : defaultValue;
   }
 
   // =========================
   // Plan-Logik
   // =========================
   private buildDailyPlan(tasks: ToDos[]): ScheduledItem[] {
-    // 1) Alle Terminblocker
-    const allBlocks = tasks
-      .filter(t => t.category === 'Terminblocker')
-      .map(tb => this.parseToTimeBlock(tb))
-      .filter((b): b is TimeBlock => !!b);
+    const allBlocks = this.getAllBlocks(tasks);
+    const { workStart, workEnd, workBlock } = this.getWorkTimes(allBlocks);
+    const visibleBlocks = this.getVisibleBlocks(allBlocks, workBlock, workStart, workEnd);
+    const DAYS = 7;
+    // NEU: mehrere Tage Slots
+    const freeSlots = this.getMultiDaySlots(visibleBlocks, workStart, workEnd, DAYS); // array mit allen freien slots der nächsten 7 Tage
 
-    // 2) Arbeitszeit bestimmen
-    const workBlock = allBlocks.find(b => b.title === 'Arbeitstag');
-    const workStart = workBlock?.start ?? this.parseTime(this.workStart);
-    const workEnd = workBlock?.end ?? this.parseTime(this.workEnd);
+    const todos = this.getSortedTodos(tasks); // array mit allen to-dos und homeworks
 
-    // 3) Alle Terminblocker außer „Arbeitstag“ für die Anzeige
-    const terminblocker = allBlocks
-      .filter(b => b !== workBlock)
-      .map(b => this.clipToDay(b, workStart, workEnd))
-      .filter(b => b.end > b.start)
-      .sort((a, b) => a.start - b.start);
+    const scheduledTodos = this.scheduleTodos(todos, freeSlots); // array mit o-do's aufgeteilt in freie slots
 
-    // 4) Freie Slots zwischen den sichtbaren Blockern
-    const freeSlots = this.findFreeSlots(terminblocker, workStart, workEnd);
 
-    // 5) Nicht-Blocker ToDos vorbereiten & nach komplexer Logik sortieren
-    const todos = this.sortTasksForCalendar(
-      tasks.filter(t => t.category !== 'Terminblocker' && !t.done)
-    ).map(t => ({ ...t, remaining: Math.max(1, t.duration || 60) }));
-
-    const scheduledTodos: ScheduledItem[] = [];
-    for (const slot of freeSlots) {
-      let cursor = slot.start;
-      while (cursor < slot.end && todos.length > 0) {
-        const current = todos[0];
-        const space = slot.end - cursor;
-        const chunk = Math.min(space, current.remaining);
-
-        scheduledTodos.push({
-          id: current.id,
-          title: current.title,
-          category: current.category,
-          start: cursor,
-          end: cursor + chunk,
-          done: current.done,
-          isBlocker: false,
-        });
-
-        cursor += chunk;
-        current.remaining -= chunk;
-        if (current.remaining <= 0) todos.shift();
-      }
-    }
-
-    const blockerAsScheduled: ScheduledItem[] = terminblocker.map(b => ({
-      id: b.id,
-      title: b.title,
-      category: 'Terminblocker',
-      start: b.start,
-      end: b.end,
-      isBlocker: true,
-    }));
+    const blockerAsScheduled = this.scheduleBlockers(visibleBlocks, DAYS);
 
     return [...blockerAsScheduled, ...scheduledTodos].sort((a, b) => a.start - b.start);
   }
 
-  // =========================
-  // Helfer: Sortierung nach komplexer Logik
-  // =========================
-  private sortTasksForCalendar(tasks: ToDos[]): ToDos[] {
-    const now = new Date();
-
-    return tasks.sort((a, b) => {
-      const getSortValue = (task: ToDos): number => {
-        const deadline = task.deadline ? new Date(task.deadline) : null;
-        const daysDiff = deadline ? Math.floor((now.getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24)) : null;
-
-        switch (task.category) {
-          case 'To-Do - dringend': return 0;
-          case 'To-Do':
-            if (daysDiff !== null && daysDiff > 5) return 1; // überfällige > 5 Tage
-            if (daysDiff !== null && daysDiff >= -3) return 4; // Deadline in nächsten 3 Tagen oder überschritten
-            return 6; // restliche To-Do
-          case 'homework':
-            if (daysDiff !== null && daysDiff > 6) return 2; // überfällige > 6 Tage
-            return 5; // restliche Homework
-          case 'Admin': return 3;
-          default: return 7;
-        }
-      };
-
-      return getSortValue(a) - getSortValue(b);
-    });
+  private getAllBlocks(tasks: ToDos[]): TimeBlock[] {
+    return tasks
+      .filter(t => t.category === 'Terminblocker' || t.category === 'personal-blocker')
+      .map(t => this.parseToTimeBlock(t))
+      .filter((b): b is TimeBlock => !!b);
   }
 
+  private getWorkTimes(blocks: TimeBlock[]): { workStart: number; workEnd: number; workBlock?: TimeBlock } {
+    const workBlock = blocks.find(b => b.title === 'Arbeitstag');
+    const workStart = workBlock?.start ?? this.parseTime(this.workStart);
+    const workEnd = workBlock?.end ?? this.parseTime(this.workEnd);
+    return { workStart, workEnd, workBlock };
+  }
+
+  private getVisibleBlocks(blocks: TimeBlock[], workBlock: TimeBlock | undefined, workStart: number, workEnd: number): TimeBlock[] {
+    return blocks
+      .filter(b => b !== workBlock)
+      .map(b => this.clipToDay(b, workStart, workEnd))
+      .filter(b => b.end > b.start)
+      .sort((a, b) => a.start - b.start);
+  }
+
+  // NEU: MultiDay Slots
+  private getMultiDaySlots(visibleBlocks: TimeBlock[], workStart: number, workEnd: number, days: number): FreeSlot[] {
+    const slots: FreeSlot[] = [];
+
+
+    for (let d = 0; d < days; d++) {
+      const offset = d * 24 * 60;
+      const dayStart = workStart + offset;
+      const dayEnd = workEnd + offset;
+
+      const dayBlocks = visibleBlocks
+        .map(b => ({
+          ...b,
+          start: b.start + offset,
+          end: b.end + offset,
+        }))
+        .filter(b => b.start < dayEnd && b.end > dayStart);
+
+      slots.push(...this.findFreeSlots(dayBlocks, dayStart, dayEnd));
+    }
+
+    return slots;
+  }
+
+  private getSortedTodos(tasks: ToDos[]) {
+    return this.sortTasksForCalendar(
+      tasks.filter(t => t.category !== 'Terminblocker' && t.category !== 'personal-blocker' && !t.done)
+    ).map(t => ({ ...t, remaining: Math.max(1, t.duration || 60) }));
+  }
+
+  private scheduleTodos(todos: any[], freeSlots: FreeSlot[]): ScheduledItem[] {
+    const scheduledTodos: ScheduledItem[] = [];
+    let cursor = 0;
+    for (const todo of todos) {
+      let remaining = todo.remaining;
+      while (remaining > 0 && cursor < freeSlots.length) {
+        const slot = freeSlots[cursor];
+        const available = slot.end - slot.start;
+        if (available <= 0) {
+          cursor++;
+          continue;
+        }
+
+        const chunk = Math.min(remaining, available);
+
+        scheduledTodos.push({
+          id: todo.id,
+          title: todo.title,
+          category: todo.category,
+          start: slot.start,
+          end: slot.start + chunk,
+          done: todo.done,
+          isBlocker: false,
+        });
+
+        slot.start += chunk;
+        remaining -= chunk;
+
+        if (slot.start >= slot.end) cursor++;
+      }
+    }
+
+    return scheduledTodos;
+  }
+
+  private scheduleBlockers(blocks: TimeBlock[], days: number = 7): ScheduledItem[] {
+    const scheduled: ScheduledItem[] = [];
+
+    for (let d = 0; d < days; d++) {
+      const offset = d * 24 * 60; // Minuten pro Tag
+      for (const b of blocks) {
+        scheduled.push({
+          id: b.id,
+          title: b.title,
+          category: b.category,
+          start: b.start + offset,
+          end: b.end + offset,
+          isBlocker: true,
+        });
+      }
+    }
+
+    return scheduled;
+  }
+
+
   // =========================
-  // Weitere Helfer
+  // Helfer
   // =========================
   private clipToDay(b: TimeBlock, dayStart: number, dayEnd: number): TimeBlock {
     return { ...b, start: Math.max(b.start, dayStart), end: Math.min(b.end, dayEnd) };
@@ -239,18 +242,27 @@ export class DailyPlan implements OnInit {
   private findFreeSlots(blocks: TimeBlock[], dayStart: number, dayEnd: number): FreeSlot[] {
     const slots: FreeSlot[] = [];
     let cursor = dayStart;
+
     for (const b of blocks) {
       if (b.start > cursor) slots.push({ start: cursor, end: b.start });
       cursor = Math.max(cursor, b.end);
     }
+
     if (cursor < dayEnd) slots.push({ start: cursor, end: dayEnd });
+
     return slots;
   }
 
   private parseToTimeBlock(t: ToDos): TimeBlock | null {
     const range = this.parseRange(t.description || '');
     if (!range) return null;
-    return { id: t.id, title: t.title || 'Block', category: 'Terminblocker', start: range.start, end: range.end };
+    return {
+      id: t.id,
+      title: t.title || 'Block',
+      category: t.category === 'personal-blocker' ? 'personal-blocker' : 'Terminblocker',
+      start: range.start,
+      end: range.end
+    };
   }
 
   private parseRange(text: string): { start: number; end: number } | null {
@@ -285,7 +297,7 @@ export class DailyPlan implements OnInit {
   timeToPercent(mins: number): number {
     const dayStart = this.parseTime(this.workStart);
     const dayEnd = this.parseTime(this.workEnd);
-    return ((mins - dayStart) / (dayEnd - dayStart)) * 100;
+    return ((mins % (24 * 60) - dayStart) / (dayEnd - dayStart)) * 100;
   }
 
   durationToPercent(start: number, end: number): number {
@@ -303,13 +315,66 @@ export class DailyPlan implements OnInit {
   }
 
   minutesToTime(mins: number): string {
-    const h = Math.floor(mins / 60);
+    const h = Math.floor((mins % (24 * 60)) / 60);
     const m = mins % 60;
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 
   isShortItem(item: ScheduledItem): boolean {
-  return (item.end - item.start) < 60;
-}
+    return (item.end - item.start) < 60;
+  }
 
+  private sortTasksForCalendar(tasks: ToDos[]): ToDos[] {
+    const now = new Date();
+
+    return tasks.sort((a, b) => {
+      const getSortValue = (task: ToDos): number => {
+        const deadline = task.deadline ? new Date(task.deadline) : null;
+        const daysDiff = deadline ? Math.floor((now.getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24)) : null;
+
+        switch (task.category) {
+          case 'To-Do - dringend': return 0;
+          case 'To-Do':
+            if (daysDiff !== null && daysDiff > 5) return 1;
+            if (daysDiff !== null && daysDiff >= -3) return 4;
+            return 6;
+          case 'homework':
+            if (daysDiff !== null && daysDiff > 6) return 2;
+            return 5;
+          case 'Admin': return 3;
+          default: return 7;
+        }
+      };
+
+      return getSortValue(a) - getSortValue(b);
+    });
+  }
+
+  // =========================
+  // Daypicker + Filter
+  // =========================
+  onDateChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.value) {
+      this.selectedDate = new Date(input.value);
+      this.refreshPlan(); // 🔥 neu hinzufügen!
+    }
+  }
+
+
+  get itemsForSelectedDate(): ScheduledItem[] {
+    const dayStart = this.startOfDayInMinutes(this.selectedDate);
+    const dayEnd = dayStart + 24 * 60;
+
+    return this.plan.filter(item =>
+      item.start >= dayStart && item.start < dayEnd
+    );
+  }
+
+  private startOfDayInMinutes(date: Date): number {
+    const base = new Date(date);
+    base.setHours(0, 0, 0, 0);
+    const diff = (base.getTime() - this.startDate.getTime()) / (1000 * 60);
+    return diff;
+  }
 }

@@ -1,4 +1,10 @@
 <div class="daily-plan">
+    <!-- Überschrift + Daypicker -->
+    <div class="header">
+        <h2>{{ selectedDate | date:'fullDate' }}</h2>
+        <input type="date" [value]="selectedDate | date:'yyyy-MM-dd'" (change)="onDateChange($event)" />
+    </div>
+
     <!-- Zeitachse links -->
     <div class="time-axis">
         <div *ngFor="let hour of hours" class="time-label">
@@ -7,28 +13,24 @@
     </div>
 
     <!-- Plan rechts -->
-<div class="plan-items">
-  <div *ngFor="let item of plan" 
-       class="plan-item" 
-       [ngClass]="{
+    <div class="plan-items">
+        <div *ngFor="let item of itemsForSelectedDate" class="plan-item" [ngClass]="{
          'terminblocker': item.isBlocker,
          'todo': !item.isBlocker && item.category !== 'frei',
          'free': item.category === 'frei',
          'done': item.done,
          'short': isShortItem(item)
-       }"
-       [style.top.%]="timeToPercent(item.start)" 
-       [style.height.%]="durationToPercent(item.start, item.end) * 0.9">
-       
-      <ng-container *ngIf="isShortItem(item); else normalLayout">
-        <span class="time">{{ minutesToTime(item.start) }} - {{ minutesToTime(item.end) }}</span>
-        <div class="title">{{ item.title }}</div>
-      </ng-container>
+       }" [style.top.%]="timeToPercent(item.start)" [style.height.%]="durationToPercent(item.start, item.end) * 0.9">
 
-      <ng-template #normalLayout>
-        <span class="time">{{ minutesToTime(item.start) }} - {{ minutesToTime(item.end) }}</span>
-        <div class="title">{{ item.title }}</div>
-      </ng-template>
-  </div>
-</div>
+            <ng-container *ngIf="isShortItem(item); else normalLayout">
+                <span class="time">{{ minutesToTime(item.start) }} - {{ minutesToTime(item.end) }}</span>
+                <div class="title">{{ item.title }}</div>
+            </ng-container>
+
+            <ng-template #normalLayout>
+                <span class="time">{{ minutesToTime(item.start) }} - {{ minutesToTime(item.end) }}</span>
+                <div class="title">{{ item.title }}</div>
+            </ng-template>
+        </div>
+    </div>
 </div>

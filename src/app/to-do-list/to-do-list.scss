@@ -1,7 +1,16 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+
+}
+
 .todo-container {
     max-width: 600px;
     margin: 0 auto;
     margin-inline: 8px;
+    width: 100%;
 }
 
 .todo-item {
